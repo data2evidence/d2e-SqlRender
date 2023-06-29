@@ -1,4 +1,4 @@
-There are 2 changes and 1 bugfixes (see NEWS.md).
+There are 2 bugfixes (see NEWS.md).
 
 ---
 
@@ -14,4 +14,4 @@ There were no ERRORs or WARNINGs.
 
 ## Downstream dependencies
 
-- Achilles, CohortAlgebra, DatabaseConnector, TreatmentPatterns, CDMConnector, CohortExplorer, and DrugExposureDiagnostics depend on SqlRender, and has been tested with this new version. No problems were found.
+- DatabaseConnector and CDMConnector depend on SqlRender, and has been tested with this new version. No problems were found.

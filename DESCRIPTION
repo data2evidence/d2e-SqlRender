@@ -1,8 +1,8 @@
 Package: SqlRender
 Type: Package
 Title: Rendering Parameterized SQL and Translation to Dialects
-Version: 1.16.1
-Date: 2023-10-07
+Version: 1.15.1
+Date: 2023-06-29
 Authors@R: c(
   person("Martijn", "Schuemie", , "schuemie@ohdsi.org", role = c("aut", "cre")),
   person("Marc", "Suchard", role = c("aut"))
@@ -25,6 +25,7 @@ Suggests:
   testthat,
   knitr,
   rmarkdown,
+  stringr,
   shiny,
   shinydashboard
 RoxygenNote: 7.2.3
