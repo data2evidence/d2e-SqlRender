@@ -1435,7 +1435,7 @@ iris,STDEV(@a),STDDEV(@a)
 iris,STDEV_POP(@a),STDDEV_POP(@a)
 iris,STDEV_SAMP(@a),STDDEV_SAMP(@a)
 iris,EOMONTH(@date),LAST_DAY(@date)
-iris,.DOMAIN ,."DOMAIN"
+iris,.DOMAIN ,."DOMAIN" 
 hana,GETDATE(),CURRENT_DATE
 hana,"DATEADD(second,@seconds,@datetime)","ADD_SECONDS(TO_TIMESTAMP(@datetime),@seconds)"
 hana,"DATEADD(minute,@minutes,@datetime)","ADD_SECONDS(TO_TIMESTAMP(@datetime),@minutes*60)"
