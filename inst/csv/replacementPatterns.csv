@@ -1440,3 +1440,62 @@ iris,EOMONTH(@date),LAST_DAY(@date)
 iris,.DOMAIN ,."DOMAIN" 
 iris,NEWID(),$TSQL_NEWID()
 iris,RAND(),$TSQL_NEWID()
+hana,GETDATE(),CURRENT_DATE
+hana,"DATEADD(second,@seconds,@datetime)","ADD_SECONDS(TO_TIMESTAMP(@datetime),@seconds)"
+hana,"DATEADD(minute,@minutes,@datetime)","ADD_SECONDS(TO_TIMESTAMP(@datetime),@minutes*60)"
+hana,"DATEADD(hour,@hours,@datetime)","ADD_SECONDS(TO_TIMESTAMP(@datetime),@hours*60*60)"
+hana,"DATEADD(d,@days,@date)","ADD_DAYS(TO_DATE(@date),@days)"
+hana,"DATEADD(dd,@days,@date)","ADD_DAYS(TO_DATE(@date),@days)"
+hana,"DATEADD(day,@days,@date)","ADD_DAYS(TO_DATE(@date),@days)"
+hana,"DATEADD(month,@months,@date)","ADD_MONTHS(@date, @months)"
+hana,"DATEADD(mm,@months,@date)","ADD_MONTHS(@date, @months)"
+hana,"DATEADD(m,@months,@date)","ADD_MONTHS(@date, @months)"
+hana,"DATEADD(year,@years,@date)","ADD_YEARS(@date, @years)"
+hana,"DATEADD(yyyy,@years,@date)","ADD_YEARS(@date, @years)"
+hana,"DATEADD(yy,@years,@date)","ADD_YEARS(@date, @years)"
+hana,"DATEDIFF(d,@start,@end)","DAYS_BETWEEN(@start,@end)"
+hana,"DATEDIFF(dd,@start,@end)","DAYS_BETWEEN(@start,@end)"
+hana,"DATEDIFF(day,@start,@end)","DAYS_BETWEEN(@start,@end)"
+hana,"DATEFROMPARTS(@year,@month,@day)","TO_DATE(@year || '-' || @month || '-' || @day, 'YYYY-MM-DD')"
+hana,STDEV(@a),STDDEV(@a)
+hana,"ISNULL(@a,@b)","IFNULL(@a,@b)"
+hana,"COUNT_BIG(@a)","COUNT(@a)"
+hana,"COALESCE(@a,@b)","IFNULL(@a,@b)"
+hana,SELECT @a AS @b), SELECT @a AS @b FROM DUMMY)
+hana,SELECT @a UNION,SELECT @a FROM DUMMY UNION
+hana,AS (SELECT @a FROM DUMMY UNION select @b),AS (SELECT @a FROM DUMMY UNION SELECT @b FROM DUMMY)
+hana,"(SELECT @a FROM DUMMY UNION all @b) @c where","(SELECT @a FROM DUMMY UNION all @b FROM DUMMY) @c WHERE"
+hana,INSERT INTO @a FROM DUMMY UNION ALL @b ;,INSERT INTO @a FROM DUMMY UNION ALL @b FROM DUMMY;
+hana,FROM DUMMY FROM DUMMY, <dummy> FROM DUMMY
+hana,FROM @a UNION @b FROM DUMMY UNION,FROM @a UNION @b FROM DUMMY FROM DUMMY UNION
+hana,FROM @a FROM DUMMY UNION,FROM @a UNION
+hana,FROM @a UNION @b FROM DUAL;,FROM @a UNION @b FROM DUAL FROM DUAL;
+hana,FROM @a FROM DUAL;,FROM @a;
+hana,FROM @a UNION @b FROM DUMMY WHERE,FROM @a UNION @b FROM DUMMY FROM DUMMY WHERE
+hana,FROM @a FROM DUMMY WHERE,FROM @a WHERE
+hana,FROM @a UNION @b FROM DUMMY),FROM @a UNION @b FROM DUMMY FROM DUMMY)
+hana,FROM @b FROM DUMMY),FROM @b)
+hana,"IF OBJECT_ID('@table', 'U') IS NULL CREATE TABLE @table (@definition);","DO BEGIN IF NOT EXISTS (SELECT * FROM (SELECT SCHEMA_NAME || '.' || TABLE_NAME AS combined_name, SCHEMA_NAME, TABLE_NAME FROM tables) WHERE combined_name=UPPER('@table')) THEN CREATE TABLE @table (@definition); END IF; END;"
+hana,"IF OBJECT_ID('@table', 'U') IS NOT NULL DROP TABLE @table;","DO BEGIN IF EXISTS (SELECT * FROM (SELECT SCHEMA_NAME || '.' || TABLE_NAME AS combined_name, SCHEMA_NAME, TABLE_NAME FROM tables) WHERE combined_name=UPPER('@table')) THEN DROP TABLE @table; END IF; END;"
+hana,"IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE @table;","DO BEGIN IF EXISTS (SELECT * FROM (SELECT SCHEMA_NAME || '.' || TABLE_NAME AS combined_name, SCHEMA_NAME, TABLE_NAME FROM tables) WHERE combined_name=UPPER('@table')) THEN DROP TABLE @table; END IF; END;"
+hana,"DROP TABLE IF EXISTS @table_name;","DO BEGIN IF EXISTS (SELECT * FROM (SELECT SCHEMA_NAME || '.' || TABLE_NAME AS combined_name, SCHEMA_NAME, TABLE_NAME FROM tables) WHERE combined_name=UPPER('@table_name')) THEN DROP TABLE @table_name; END IF; END;"
+hana,CREATE TABLE #@table (@definition);,CREATE LOCAL TEMPORARY TABLE #@table (@definition);
+hana,WITH @a AS @b SELECT @c INTO #@d FROM @e;,CREATE LOCAL TEMPORARY TABLE #@d\nAS(\nWITH @a AS @b SELECT\n@c\nFROM\n@e);
+hana,WITH @a AS @b SELECT @c INTO @d FROM @e;,CREATE TABLE @d\nAS(\nWITH @a AS @b SELECT\n@c\nFROM\n@e);
+hana,SELECT @a INTO #@b FROM @c;,CREATE LOCAL TEMPORARY TABLE #@b AS(\nSELECT\n@a\nFROM\n@c);
+hana,SELECT @a INTO @b FROM @c;,CREATE TABLE @b AS(\nSELECT\n@a\nFROM\n@c);
+hana,SELECT @a INTO @b;,CREATE TABLE @b AS\nSELECT\n@a;
+hana,#,<hash><hash>
+hana,LEN(@a),LENGTH(@a)
+hana,<hash><hash>,%temp_prefix%#
+hana,CREATE INDEX @a ON @schema.#@b (@variable);,
+hana,"ISNUMERIC(abs(@a))","CASE WHEN (CAST(abs(@a) AS VARCHAR) LIKE_REGEXPR '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END"
+hana,"ISNUMERIC(@a)","CASE WHEN (CAST(@a AS VARCHAR) LIKE_REGEXPR '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END"
+hana,<dummy>,
+hana,"CONCAT(@a, @b, @c)","CONCAT(@a, CONCAT(@b, @c))"
+hana,"CONCAT(@a, @b)","@a || @b"
+hana,EOMONTH(@date),LAST_DAY(@date)
+hana,"CHARINDEX(@a,@b)","LOCATE(@b,@a)"
+hana,"floor(@a)","CAST(<F_L_O_O_R>(@a) AS INTEGER)"
+hana,"<F_L_O_O_R>","FLOOR"
+hana,UPDATE STATISTICS #@a;,-- STATISTICS not supported on tempoary tables

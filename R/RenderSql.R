@@ -133,7 +133,7 @@ renderSql <- function(sql = "", warnOnMissingParameters = TRUE, ...) {
 #'
 #' @param sql                   The SQL to be translated
 #' @param targetDialect         The target dialect. Currently "oracle", "postgresql", "pdw", "impala",
-#'                              "sqlite", "sqlite extended", "netezza", "bigquery", "snowflake", "synapse", "spark", 
+#'                              "sqlite", "sqlite extended", "netezza", "bigquery", "snowflake", "synapse", "spark", "hana",
 #'                              "redshift", and "iris" are supported.
 #'                              Use \code{\link{listSupportedDialects}} to get the list of supported dialects.
 #' @param oracleTempSchema      DEPRECATED: use \code{tempEmulationSchema} instead.
