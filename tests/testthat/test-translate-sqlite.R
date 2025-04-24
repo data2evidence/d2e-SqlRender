@@ -161,7 +161,7 @@ test_that("translate sql server -> sqlite DATEDIFF with literals", {
   sql <- translate("SELECT DATEDIFF(DAY, '20000131', '20000101');", targetDialect = "sqlite")
   expect_equal_ignore_spaces(
     sql,
-    "SELECT JULIANDAY(CAST(STRFTIME('%s', SUBSTR(CAST('20000101' AS TEXT), 1, 4) || '-' || SUBSTR(CAST('20000101' AS TEXT), 5, 2) || '-' || SUBSTR(CAST('20000101' AS TEXT), 7)) AS REAL), 'unixepoch') - JULIANDAY(CAST(STRFTIME('%s', SUBSTR(CAST('20000131' AS TEXT), 1, 4) || '-' || SUBSTR(CAST('20000131' AS TEXT), 5, 2) || '-' || SUBSTR(CAST('20000131' AS TEXT), 7)) AS REAL), 'unixepoch');"
+    "SELECT (JULIANDAY(CAST(STRFTIME('%s', SUBSTR(CAST('20000101' AS TEXT), 1, 4) || '-' || SUBSTR(CAST('20000101' AS TEXT), 5, 2) || '-' || SUBSTR(CAST('20000101' AS TEXT), 7)) AS REAL), 'unixepoch') - JULIANDAY(CAST(STRFTIME('%s', SUBSTR(CAST('20000131' AS TEXT), 1, 4) || '-' || SUBSTR(CAST('20000131' AS TEXT), 5, 2) || '-' || SUBSTR(CAST('20000131' AS TEXT), 7)) AS REAL), 'unixepoch'));"
   )
 })
 
@@ -169,7 +169,7 @@ test_that("translate sql server -> sqlite DATEDIFF with date fields", {
   sql <- translate("SELECT DATEDIFF(DAY, date1, date2);", targetDialect = "sqlite")
   expect_equal_ignore_spaces(
     sql,
-    "SELECT JULIANDAY(date2, 'unixepoch') - JULIANDAY(date1, 'unixepoch');"
+    "SELECT (JULIANDAY(date2, 'unixepoch') - JULIANDAY(date1, 'unixepoch'));"
   )
 })
 
@@ -271,4 +271,9 @@ test_that("translate sql server -> sqlite ALTER TABLE ADD COLUMN", {
   # Note: this is incorrect OhdsiSql, but included for legacy reasons (https://github.com/OHDSI/CohortDiagnostics/issues/1080)
   sql <- translate("ALTER TABLE my_table ADD COLUMN a INT;", targetDialect = "sqlite")
   expect_equal_ignore_spaces(sql, "ALTER TABLE my_table ADD COLUMN a INT;")
+})
+
+test_that("translate sql server -> sqlite ALTER TABLE ALTER COLUMN", {
+  sql <- translate("ALTER TABLE my_table ALTER COLUMN a BIGINT;", targetDialect = "sqlite")
+  expect_equal_ignore_spaces(sql, "SELECT 0;")
 })

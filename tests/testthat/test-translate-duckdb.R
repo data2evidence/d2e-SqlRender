@@ -34,6 +34,14 @@ test_that("translate sql server -> DuckDB add months", {
   )
 })
 
+test_that("translate sql server -> DuckDB add years", {
+  sql <- translate("DATEADD(yy,2,date)", targetDialect = "duckdb")
+  expect_equal_ignore_spaces(
+    sql,
+    "(date + TO_YEARS(CAST(2 AS INTEGER)))"
+  )
+})
+
 test_that("translate sql server -> DuckDB WITH SELECT INTO", {
   sql <- translate("WITH cte1 AS (SELECT a FROM b) SELECT c INTO d FROM cte1;",
     targetDialect = "duckdb"
@@ -225,5 +233,17 @@ test_that("translate sql server -> DuckDB add days with period", {
   expect_equal_ignore_spaces(
     sql,
     "(date + TO_DAYS(CAST(-2.0 AS INTEGER)))"
+  )
+})
+test_that("translate sql server -> duckdb NEWID", {
+  sql <- translate("SELECT NEWID()", targetDialect = "duckdb")
+  expect_equal_ignore_spaces(sql, "SELECT uuid()")
+})
+
+test_that("translate sql server -> DuckDB CONVERT(AS DATE) with literal from CONCAT", {
+  sql <- translate("CAST(CONCAT('2000', '0101') AS DATE);", targetDialect = "duckdb")
+  expect_equal_ignore_spaces(
+    sql,
+    "CAST(strptime(CONCAT('2000', '0101'), '%Y%m%d') AS DATE);"
   )
 })

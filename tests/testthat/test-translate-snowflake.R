@@ -205,8 +205,14 @@ test_that("translate sql server -> snowflake a.b.c... in paren", {
   expect_equal_ignore_spaces(sql, "(SELECT x FROM axbxmy_tablexxx1)")
 })
 
+test_that("translate sql server -> snowflake bitwise and", {
+  sql <- translate("SELECT ((a+b) & c/123) FROM table;", targetDialect = "snowflake")
+  expect_equal_ignore_spaces(sql, "SELECT BITAND((a+b) , c/123) FROM table ;")
+})
 
-
+test_that("translate sql server -> Snowflake CAST(AS DATE)", {
+  sql <- translate("CAST('20000101' AS DATE);", targetDialect = "snowflake")
+  expect_equal_ignore_spaces(sql, "TO_DATE('20000101', 'YYYYMMDD');")
+})
 
 # rJava::J('org.ohdsi.sql.SqlTranslate')$setReplacementPatterns('inst/csv/replacementPatterns.csv')
-

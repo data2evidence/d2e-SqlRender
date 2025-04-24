@@ -6,7 +6,7 @@
 	<groupId>org.ohdsi.sql</groupId>
 	<artifactId>SqlRender</artifactId>
 	<packaging>jar</packaging>
-	<version>1.16.1-SNAPSHOT</version>
+	<version>1.19.2-SNAPSHOT</version>
 	<name>SqlRender</name>
 	<scm>
 		<connection>scm:git:https://github.com/OHDSI/SqlRender</connection>
@@ -20,24 +20,22 @@
 		<test.dir>test</test.dir>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<sonar.organization>alp</sonar.organization>
-		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<distributionManagement>
 		<repository>
 			<id>internal</id>
-			<url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
+			<url>https://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>snapshots</id>
-			<url>http://repo.ohdsi.org:8085/nexus/content/repositories/snapshots</url>
+			<url>https://repo.ohdsi.org:8085/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<repositories>
 		<repository>
 			<id>ohdsi</id>
 			<name>repo.ohdsi.org</name>
-			<url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
+			<url>https://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
 		</repository>
 	</repositories>
 	<build>

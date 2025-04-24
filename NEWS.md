@@ -1,3 +1,87 @@
+SqlRender 1.19.2
+================
+
+Bugfixes:
+
+1. On DataBricks, a translation of `DATEADD()` now returns a `DATE` if the input was a `DATE`, to be consistent with other platforms. (Requires input field name to end with '_date')
+
+2. When creating emulated temp tables on IRIS, will first attempt to drop (if exist). This follows behavior for Oracle, Spark, and BigQuery.
+
+3. Fixing translation of `NEWID()` and `RAND()` on IRIS.
+
+
+SqlRender 1.19.1
+================
+
+Bugfixes:
+
+1. Some additional translation rules for InterSystems IRIS.
+
+
+SqlRender 1.19.0
+================
+
+Changes:
+
+1. When creating emulated temp tables (Oracle, Spark, BigQuery), will first attempt to drop (if exist). This is to clean up any orphan tables from a previous (unsuccesful) run.
+
+2. Adding tentative support for InterSystems IRIS. Could still be removed.
+
+Bugfixes:
+
+1. On Snowflake, fixed 'This session does not have a current schema' error when translating legacy `IF OBJECT_ID('tempdb..#table', 'U') IS NOT NULL DROP TABLE #table;`
+
+
+SqlRender 1.18.1
+================
+
+Changes:
+
+1. Changing Spark translation of `DATEADD()` from `DATE_ADD()` to `DATEADD()` as required by some but not all Databricks instances. 
+
+Bugfixes:
+
+1. Fixed DuckDb translation of `CAST(CONCATENATE(...) AS DATE)`.
+
+2. Fix Snowflake and DataBricks translation of `CAST(... AS DATE)` when `...` is a literal.
+
+SqlRender 1.18.0
+================
+
+Changes:
+
+1. Adding translation for bitwise AND operator (`&`).
+
+2. Changing temp table field name maximum length to 63-8 for throwing warnings (was 30-8). Oracle changed it's limit from 30 to 128 in version 12.2, which was released in 2021. The new limit comes from PostgreSQL, which by default allows for 63 characters. All other supported DBMSs allow for longer names.
+
+
+Bugfixes:
+
+1. For SQLite, now translating `ALTER TABLE ALTER COLUMN BIGINT`to dummy statement (`SELECT 0;`), since all integer types are the same on SQLite.
+
+2. Fixed translation of `ALTER TABLE ALTER COLUMN` on PostgreSQL.
+
+3. More robust detection of string concatenation for BigQuery.
+
+
+SqlRender 1.17.0
+================
+
+Changes:
+
+1. Adding datetime calculations to Spark translation.
+
+Bugfixes:
+
+1. Fix translation of `NEWID()` for DuckDB.
+
+2. Fix `LEFT()` and `RIGHT()` translation on Spark.
+
+3. Fix some date functions on SQLite.
+
+4. Fix `DROP TABLE IF EXISTS` and `CREATE TABLE IF EXISTS` translation for Synapse.
+
+
 SqlRender 1.16.1
 ================
 

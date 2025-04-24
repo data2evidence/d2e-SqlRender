@@ -24,6 +24,30 @@ test_that("translate sql server -> Oracle DATEDIFF", {
     sql,
     "SELECT CEIL(CAST(drug_era_end_date AS DATE) - CAST(drug_era_start_date AS DATE)) FROM drug_era;"
   )
+
+  sql <- translate("SELECT DATEDIFF(second,drug_era_start_date,drug_era_end_date) FROM drug_era;",
+    targetDialect = "oracle"
+  )
+  expect_equal_ignore_spaces(
+    sql,
+    "SELECT EXTRACT(SECOND FROM (drug_era_end_date - drug_era_start_date)) FROM drug_era;"
+  )
+
+  sql <- translate("SELECT DATEDIFF(minute,drug_era_start_date,drug_era_end_date) FROM drug_era;",
+    targetDialect = "oracle"
+  )
+  expect_equal_ignore_spaces(
+    sql,
+    "SELECT EXTRACT(MINUTE FROM (drug_era_end_date - drug_era_start_date)) FROM drug_era;"
+  )
+
+  sql <- translate("SELECT DATEDIFF(hour,drug_era_start_date,drug_era_end_date) FROM drug_era;",
+    targetDialect = "oracle"
+  )
+  expect_equal_ignore_spaces(
+    sql,
+    "SELECT EXTRACT(HOUR FROM (drug_era_end_date - drug_era_start_date)) FROM drug_era;"
+  )
 })
 
 test_that("translate sql server -> Oracle DATEDIFF year", {
@@ -531,4 +555,19 @@ test_that("translate sql server -> oracle temp table field ref", {
 test_that("translate sql server -> oracle temp dplyr ... pattern", {
   sql <- translate("SELECT * FROM table...1;", targetDialect = "oracle")
   expect_equal_ignore_spaces(sql, "SELECT * FROM tablexxx1;")
+})
+
+test_that("translate sql server -> oracle bitwise and", {
+  sql <- translate("SELECT ((a+b) & c/123) FROM table;", targetDialect = "oracle")
+  expect_equal_ignore_spaces(sql, "SELECT BITAND((a+b) , c/123) FROM table ;")
+})
+
+test_that("translate sql server -> oracle create temp table", {
+  sql <- translate("CREATE TABLE #temp (x INT);", targetDialect = "oracle", tempEmulationSchema = "ts")
+  expect_equal_ignore_spaces(sql, sprintf("BEGIN\n  EXECUTE IMMEDIATE 'TRUNCATE TABLE ts.%stemp';\n  EXECUTE IMMEDIATE 'DROP TABLE ts.%stemp';\nEXCEPTION\n  WHEN OTHERS THEN\n    IF SQLCODE != -942 THEN\n      RAISE;\n    END IF;\nEND;\nCREATE TABLE ts.%stemp (x INT);", getTempTablePrefix(), getTempTablePrefix(), getTempTablePrefix()))
+})
+
+test_that("translate sql server -> oracle select into temp table", {
+  sql <- translate("SELECT * INTO #temp FROM my_table;", targetDialect = "oracle", tempEmulationSchema = "ts")
+  expect_equal_ignore_spaces(sql, sprintf("BEGIN\n  EXECUTE IMMEDIATE 'TRUNCATE TABLE ts.%stemp';\n  EXECUTE IMMEDIATE 'DROP TABLE ts.%stemp';\nEXCEPTION\n  WHEN OTHERS THEN\n    IF SQLCODE != -942 THEN\n      RAISE;\n    END IF;\nEND;\nCREATE TABLE ts.%stemp AS\nSELECT\n* \nFROM\nmy_table ;", getTempTablePrefix(), getTempTablePrefix(), getTempTablePrefix()))
 })

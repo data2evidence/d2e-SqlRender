@@ -54,66 +54,83 @@ test_that("translate sql server -> spark convert date", {
 })
 
 
-test_that("translate sql server -> spark dateadd", {
-  sql <- translate("SELECT dateadd(second, 1, '2019-01-01 00:00:00')",
+test_that("translate sql server -> spark DATEADD", {
+  # Need custom translation pattern for negative intervals in Spark
+  sql <- translate("SELECT DATEADD(second, -1 * 2, '2019-01-01 00:00:00')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01 00:00:00' + INTERVAL 1 second)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(second,-1 * 2,'2019-01-01 00:00:00')")
 
-  sql <- translate("SELECT dateadd(minute, 1, '2019-01-01 00:00:00')",
+  sql <- translate("SELECT DATEADD(minute, -1 * 3, '2019-01-01 00:00:00')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01 00:00:00' + INTERVAL 1 minute)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(minute,-1 * 3,'2019-01-01 00:00:00')")
 
-  sql <- translate("SELECT dateadd(hour, 1, '2019-01-01 00:00:00')",
+  sql <- translate("SELECT DATEADD(hour, -1 * 4, '2019-01-01 00:00:00')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01 00:00:00' + INTERVAL 1 hour)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(hour,-1 * 4,'2019-01-01 00:00:00')")
 
-  sql <- translate("SELECT dateadd(d, 1, '2019-01-01')",
+  # Positive intervals have typical translation patterns
+  sql <- translate("SELECT DATEADD(second, 1, '2019-01-01 00:00:00')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT date_add('2019-01-01', 1)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(second,1,'2019-01-01 00:00:00')")
 
-  sql <- translate("SELECT dateadd(dd, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(minute, 1, '2019-01-01 00:00:00')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT date_add('2019-01-01', 1)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(minute,1,'2019-01-01 00:00:00')")
 
-  sql <- translate("SELECT dateadd(day, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(hour, 1, '2019-01-01 00:00:00')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT date_add('2019-01-01', 1)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(hour,1,'2019-01-01 00:00:00')")
 
-  sql <- translate("SELECT dateadd(m, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(d, 1, '2019-01-01')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01' + INTERVAL 1 month)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(day,1,'2019-01-01')")
 
-  sql <- translate("SELECT dateadd(mm, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(dd, 1, '2019-01-01')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01' + INTERVAL 1 month)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(day,1,'2019-01-01')")
 
-  sql <- translate("SELECT dateadd(month, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(day, 1, '2019-01-01')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01' + INTERVAL 1 month)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(day,1,'2019-01-01')")
 
-  sql <- translate("SELECT dateadd(yy, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(m, 1, '2019-01-01')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01' + INTERVAL 1 year)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(month,1,'2019-01-01')")
 
-  sql <- translate("SELECT dateadd(yyyy, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(mm, 1, '2019-01-01')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01' + INTERVAL 1 year)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(month,1,'2019-01-01')")
 
-  sql <- translate("SELECT dateadd(year, 1, '2019-01-01')",
+  sql <- translate("SELECT DATEADD(month, 1, '2019-01-01')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT ('2019-01-01' + INTERVAL 1 year)")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(month,1,'2019-01-01')")
+
+  sql <- translate("SELECT DATEADD(yy, 1, '2019-01-01')",
+    targetDialect = "spark"
+  )
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(year,1,'2019-01-01')")
+
+  sql <- translate("SELECT DATEADD(yyyy, 1, '2019-01-01')",
+    targetDialect = "spark"
+  )
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(year,1,'2019-01-01')")
+
+  sql <- translate("SELECT DATEADD(year, 1, '2019-01-01')",
+    targetDialect = "spark"
+  )
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(year,1,'2019-01-01')")
 })
 
 
@@ -121,17 +138,12 @@ test_that("translate sql server -> spark datediff", {
   sql <- translate("SELECT datediff(d, '2019-01-01', '2019-01-02')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT datediff('2019-01-02', '2019-01-01')")
+  expect_equal_ignore_spaces(sql, "SELECT datediff(day, '2019-01-01', '2019-01-02')")
 
   sql <- translate("SELECT datediff(dd, '2019-01-01', '2019-01-02')",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "SELECT datediff('2019-01-02', '2019-01-01')")
-
-  sql <- translate("SELECT datediff(day, '2019-01-01', '2019-01-02')",
-    targetDialect = "spark"
-  )
-  expect_equal_ignore_spaces(sql, "SELECT datediff('2019-01-02', '2019-01-01')")
+  expect_equal_ignore_spaces(sql, "SELECT datediff(day, '2019-01-01', '2019-01-02')")
 })
 
 test_that("translate sql server -> spark convert date", {
@@ -401,28 +413,28 @@ test_that("translate sql server -> spark IIF", {
 
 test_that("translate sql server -> spark DATEPART", {
   sql <- translate("select DATEPART(YEAR, some_date) from my_table",
-                   targetDialect = "spark"
+    targetDialect = "spark"
   )
   expect_equal_ignore_spaces(sql, "select DATE_PART('YEAR', some_date) from my_table")
 })
 
 test_that("translate sql server -> spark DATEADD DAY with float", {
   sql <- translate("select DATEADD(DAY, 1.0, some_date) from my_table;",
-                   targetDialect = "spark"
+    targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "select date_add(some_date, 1) from my_table;")
+  expect_equal_ignore_spaces(sql, "select CAST(DATEADD(DAY, 1, some_date) AS DATE) from my_table;")
 })
 
 test_that("translate sql server -> spark DATEADD YEAR with float", {
   sql <- translate("select DATEADD(YEAR, 1.0, some_date) from my_table;",
-                   targetDialect = "spark"
+    targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "select (some_date + INTERVAL 1 year) from my_table;")
+  expect_equal_ignore_spaces(sql, "select CAST(DATEADD(YEAR, 1, some_date) AS DATE) from my_table;")
 })
 
-test_that("translate sql server -> spark DATEADD YEAR with float", {
+test_that("translate sql server -> spark CTE", {
   sql <- translate("WITH cte AS (SELECT * FROM table) SELECT * INTO tmp.table FROM cte;",
-                   targetDialect = "spark"
+    targetDialect = "spark"
   )
   expect_equal_ignore_spaces(sql, "DROP VIEW IF EXISTS cte ; CREATE TEMPORARY VIEW cte  AS (SELECT * FROM table);\n CREATE TABLE tmp.table \nUSING DELTA\nAS\n(SELECT\n* \nFROM\ncte);")
 })
@@ -431,3 +443,43 @@ test_that("translate sql server -> spark temp table field ref", {
   sql <- translate("SELECT #tmp.name FROM #tmp;", targetDialect = "spark", tempEmulationSchema = "ts")
   expect_equal_ignore_spaces(sql, sprintf("SELECT %stmp.name FROM ts.%stmp;", getTempTablePrefix(), getTempTablePrefix()))
 })
+
+test_that("translate sql server -> spark add column with default", {
+  sql <- translate("ALTER TABLE mytable ADD COLUMN mycol int DEFAULT 0;", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE mytable ADD COLUMN mycol int; \n ALTER TABLE mytable SET TBLPROPERTIES('delta.feature.allowColumnDefaults' = 'supported'); \n ALTER TABLE mytable ALTER COLUMN mycol SET DEFAULT 0;")
+})
+
+test_that("translate sql server -> spark cast string as date", {
+  sql <- translate("SELECT CAST('20191201' AS DATE);", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "SELECT IF(try_cast('20191201' AS DATE) IS NULL, to_date(cast('20191201' AS STRING), 'yyyyMMdd'), try_cast('20191201' AS DATE));")
+})
+
+test_that("translate sql server -> spark create temp table", {
+  sql <- translate("CREATE TABLE #temp (x INT);", targetDialect = "spark", tempEmulationSchema = "ts")
+  expect_equal_ignore_spaces(sql, sprintf("DROP TABLE IF EXISTS ts.%stemp;\nCREATE TABLE ts.%stemp  \nUSING DELTA\n AS\nSELECT\nCAST(NULL AS int) AS x  WHERE 1 = 0;", getTempTablePrefix(), getTempTablePrefix()))
+})
+
+test_that("translate sql server -> spark select into temp table", {
+  sql <- translate("SELECT * INTO #temp FROM my_table;", targetDialect = "spark", tempEmulationSchema = "ts")
+  expect_equal_ignore_spaces(sql, sprintf("DROP TABLE IF EXISTS ts.%stemp;\nCREATE TABLE ts.%stemp \nUSING DELTA\nAS\nSELECT\n* \nFROM\nmy_table;", getTempTablePrefix(), getTempTablePrefix()))
+})
+
+test_that("translate sql server -> spark create temp table if not exists", {
+  sql <- translate("CREATE TABLE IF NOT EXISTS #temp (x INT);", targetDialect = "spark", tempEmulationSchema = "ts")
+  expect_equal_ignore_spaces(sql, sprintf("CREATE TABLE IF NOT EXISTS ts.%stemp  \nUSING DELTA\n AS\nSELECT\nCAST(NULL AS int) AS x  WHERE 1 = 0;", getTempTablePrefix()))
+})
+
+rJava::J('org.ohdsi.sql.SqlTranslate')$setReplacementPatterns('inst/csv/replacementPatterns.csv')
+
+test_that("translate sql server -> spark DATEADD for DATE column", {
+  # If field is a date, it should remain a date after DATEADD to be consistent with other platforms:
+  sql <- translate("SELECT DATEADD(DAY, 1, start_date) FROM table;", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "SELECT CAST(DATEADD(DAY,1,start_date) AS DATE) FROM table;")
+
+  sql <- translate("SELECT DATEADD(DAY, 1, START_DATE) FROM table;", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "SELECT CAST(DATEADD(DAY,1,START_DATE) AS DATE) FROM table;")
+
+  sql <- translate("SELECT DATEADD(DAY, 1, start_datetime) FROM table;", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "SELECT DATEADD(DAY,1,start_datetime) FROM table;")
+})
+

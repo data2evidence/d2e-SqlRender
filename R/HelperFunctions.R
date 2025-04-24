@@ -1,6 +1,6 @@
 # @file HelperFunctions.R
 #
-# Copyright 2023 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of SqlRender
 #
@@ -130,7 +130,8 @@ renderSqlFile <- function(sourceFile, targetFile, warnOnMissingParameters = TRUE
 #' @param sourceFile            The source SQL file
 #' @param targetFile            The target SQL file
 #' @param targetDialect         The target dialect. Currently "oracle", "postgresql", "pdw", "impala",
-#'                              "sqlite", "netezza", "bigquery", "snowflake", "synapse", "spark", and "redshift" are supported.
+#'                              "sqlite", "netezza", "bigquery", "snowflake", "synapse", "spark", "redshift"
+#'                              and "iris" are supported.
 #' @param oracleTempSchema      DEPRECATED: use \code{tempEmulationSchema} instead.
 #' @param tempEmulationSchema   Some database platforms like Oracle and Impala do not truly support
 #'                              temp tables. To emulate temp tables, provide a schema with write
@@ -183,8 +184,8 @@ translateSqlFile <- function(sourceFile,
 #' @details
 #' This function looks for a SQL file with the specified name in the inst/sql/<dbms> folder of the
 #' specified package. If it doesn't find it in that folder, it will try and load the file from the
-#' inst/sql or inst/sql/sql_server folder and use the \code{translate} function to translate it to the 
-#' requested dialect. It will subsequently call the \code{render} function with any of the additional 
+#' inst/sql or inst/sql/sql_server folder and use the \code{translate} function to translate it to the
+#' requested dialect. It will subsequently call the \code{render} function with any of the additional
 #' specified parameters.
 #'
 #'
