@@ -1499,3 +1499,92 @@ hana,"CHARINDEX(@a,@b)","LOCATE(@b,@a)"
 hana,"floor(@a)","CAST(<F_L_O_O_R>(@a) AS INTEGER)"
 hana,"<F_L_O_O_R>","FLOOR"
 hana,UPDATE STATISTICS #@a;,-- STATISTICS not supported on tempoary tables
+trex_duckdb,...@([0-9]+|y)a,xxx@a
+trex_duckdb,TRY_CAST(@a),CAST(@a)
+trex_duckdb,"IIF(@condition, @whentrue, @whenfalse)","CASE WHEN @condition THEN @whentrue ELSE @whenfalse END"
+trex_duckdb,"ROUND(@a,@b)","ROUND(CAST(@a AS NUMERIC),@b)"
+trex_duckdb,"HASHBYTES('MD5',@a)","MD5(@a)"
+trex_duckdb,"DATEADD(second,@seconds,@datetime)",(@datetime + TO_SECONDS(CAST(@seconds AS INTEGER)))
+trex_duckdb,"DATEADD(minute,@minutes,@datetime)",(@datetime + TO_MINUTES(CAST(@minutes AS INTEGER)))
+trex_duckdb,"DATEADD(hour,@hours,@datetime)",(@datetime + TO_HOURS(CAST(@hours AS INTEGER)))
+trex_duckdb,"DATEADD(d,@days,@date)",(@date + TO_DAYS(CAST(@days AS INTEGER)))
+trex_duckdb,"DATEADD(dd,@days,@date)",(@date + TO_DAYS(CAST(@days AS INTEGER)))
+trex_duckdb,"DATEADD(day,@days,@date)",(@date + TO_DAYS(CAST(@days AS INTEGER)))
+trex_duckdb,"DATEADD(m,@months,@date)",(@date + TO_MONTHS(CAST(@months AS INTEGER)))
+trex_duckdb,"DATEADD(mm,@months,@date)",(@date + TO_MONTHS(CAST(@months AS INTEGER)))
+trex_duckdb,"DATEADD(month,@months,@date)",(@date + TO_MONTHS(CAST(@months AS INTEGER)))
+trex_duckdb,"DATEADD(yy,@years,@date)",(@date + TO_YEARS(CAST(@years AS INTEGER)))
+trex_duckdb,"DATEADD(yyyy,@years,@date)",(@date + TO_YEARS(CAST(@years AS INTEGER)))
+trex_duckdb,"DATEADD(year,@years,@date)",(@date + TO_YEARS(CAST(@years AS INTEGER)))
+trex_duckdb,INTERVAL'@(-?[0-9]+)a.0 @b',INTERVAL'@a @b'
+trex_duckdb,"DATEDIFF(d,@start, @end)","(CONVERT(DATE, @end) - CAST(@start AS DATE))"
+trex_duckdb,"DATEDIFF(dd,@start, @end)",(CAST(@end AS DATE) - CAST(@start AS DATE))
+trex_duckdb,"DATEDIFF(day,@start, @end)",(CAST(@end AS DATE) - CAST(@start AS DATE))
+trex_duckdb,"DATEDIFF(year,@start, @end)",(EXTRACT(YEAR FROM CAST(@end AS DATE)) - EXTRACT(YEAR FROM CAST(@start AS DATE)))
+trex_duckdb,"DATEDIFF(yyyy,@start, @end)",(EXTRACT(YEAR FROM CAST(@end AS DATE)) - EXTRACT(YEAR FROM CAST(@start AS DATE)))
+trex_duckdb,"DATEDIFF(yy,@start, @end)",(EXTRACT(YEAR FROM CAST(@end AS DATE)) - EXTRACT(YEAR FROM CAST(@start AS DATE)))
+trex_duckdb,"DATEDIFF(month,@start, @end)","(extract(year from age(CAST(@end AS DATE), CAST(@start AS DATE)))*12 + extract(month from age(CAST(@end AS DATE), CAST(@start AS DATE))))"
+trex_duckdb,"DATEDIFF(mm,@start, @end)","(extract(year from age(CAST(@end AS DATE), CAST(@start AS DATE)))*12 + extract(month from age(CAST(@end AS DATE), CAST(@start AS DATE))))"
+trex_duckdb,"DATEDIFF(m,@start, @end)","(extract(year from age(CAST(@end AS DATE), CAST(@start AS DATE)))*12 + extract(month from age(CAST(@end AS DATE), CAST(@start AS DATE))))"
+trex_duckdb,"CONVERT(VARCHAR,@date,112)","STRFTIME(@date, '%Y%m%d')"
+trex_duckdb,GETDATE(),CURRENT_DATE
+trex_duckdb,"CONVERT(DATE, @a)","CAST(@a AS DATE)"
+trex_duckdb,"CAST('@a' AS DATE)","CAST(strptime('@a', '%Y%m%d') AS DATE)"
+trex_duckdb,"CAST('@a' + @b AS DATE)","CAST(strptime('@a' + @b, '%Y%m%d') AS DATE)"
+trex_duckdb,"CAST(@a + '@b' AS DATE)","CAST(strptime(@a + '@b', '%Y%m%d') AS DATE)"
+trex_duckdb,"CAST(CONCAT(@a) AS DATE)","CAST(strptime(CONCAT(@a), '%Y%m%d') AS DATE)"
+trex_duckdb,+ '@a',|| '@a'
+trex_duckdb,'@a' +,'@a' ||
+trex_duckdb,CAST(@a AS varchar(@b)) +,CAST(@a AS varchar(@b)) ||
+trex_duckdb,+ CAST(@a AS varchar(@b)),|| CAST(@a AS varchar(@b))
+trex_duckdb,CAST(@a AS varchar) +,CAST(@a AS varchar) ||
+trex_duckdb,+ CAST(@a AS varchar),|| CAST(@a AS varchar)
+trex_duckdb,"DATEFROMPARTS(@year,@month,@day)","(CAST(@year AS VARCHAR) || '-' || CAST(@month AS VARCHAR) || '-' || CAST(@day AS VARCHAR)) :: DATE"
+trex_duckdb,"DATETIMEFROMPARTS(@year,@month,@day,@hour,@minute,@second,@ms)","(CAST(@year AS VARCHAR) || '-' || CAST(@month AS VARCHAR) || '-' || CAST(@day AS VARCHAR) || '-' || CAST(@hour AS VARCHAR) || '-' || CAST(@minute AS VARCHAR) || '-' || CAST(@second AS VARCHAR)) :: DATE"
+trex_duckdb,YEAR(@date),YEAR(CAST(@date AS DATE))
+trex_duckdb,MONTH(@date),MONTH(CAST(@date AS DATE))
+trex_duckdb,DAY(@date),DAY(CAST(@date AS DATE))
+trex_duckdb,"DATEPART(YEAR, @date)",YEAR(CAST(@date AS DATE))
+trex_duckdb,"DATEPART(MONTH, @date)",MONTH(CAST(@date AS DATE))
+trex_duckdb,"DATEPART(DAY, @date)",DAY(CAST(@date AS DATE))
+trex_duckdb,EOMONTH(@date),"(DATE_TRUNC('MONTH', @date) + INTERVAL '1 MONTH' - INTERVAL '1 day')::DATE"
+trex_duckdb,STDEV(@a),STDDEV(@a)
+trex_duckdb,VAR(@a),VARIANCE(@a)
+trex_duckdb,RAND(),RANDOM()
+trex_duckdb,LEN(@a),LENGTH(@a)
+trex_duckdb,"CHARINDEX(@a,@b)","STRPOS(@b,@a)"
+trex_duckdb,"LOG(@expression,@base)",(LN(CAST((@expression) AS REAL))/LN(CAST((@base) AS REAL)))
+trex_duckdb,LOG(@expression),LN(CAST((@expression) AS REAL))
+trex_duckdb,<L_O_G>,LOG
+trex_duckdb,LOG10(@expression),"LOG(@expression)"
+trex_duckdb,"ISNULL(@a,@b)","COALESCE(@a,@b)"
+trex_duckdb,"ISNUMERIC(@a)","CASE WHEN (CAST(@a AS VARCHAR) ~ '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END"
+trex_duckdb,COUNT_BIG(@a),COUNT(@a)
+trex_duckdb,SQUARE(@a),((@a)*(@a))
+trex_duckdb,NEWID(),uuid()
+trex_duckdb,USE @schema;,SET search_path TO @schema;
+trex_duckdb,"IF OBJECT_ID('@table', 'U') IS NULL CREATE TABLE @table (@definition);",CREATE TABLE IF NOT EXISTS @table (@definition);
+trex_duckdb,"IF OBJECT_ID('@table', 'U') IS NOT NULL DROP TABLE @table;",DROP TABLE IF EXISTS @table;
+trex_duckdb,"IF OBJECT_ID('tempdb..#@table', 'U') IS NOT NULL DROP TABLE @table;",DROP TABLE IF EXISTS @table;
+trex_duckdb,.dbo.,.
+trex_duckdb,CREATE TABLE #@table (@definition),CREATE TEMP TABLE @table (@definition)
+trex_duckdb,CREATE CLUSTERED INDEX @index_name ON @table (@variable);,CREATE INDEX @index_name ON @table (@variable);
+trex_duckdb,CREATE UNIQUE CLUSTERED INDEX @index_name ON @table (@variable);,CREATE UNIQUE INDEX @index_name ON @table (@variable);
+trex_duckdb,PRIMARY KEY NONCLUSTERED,PRIMARY KEY
+trex_duckdb,DATETIME,TIMESTAMP
+trex_duckdb,DATETIME2,TIMESTAMP
+trex_duckdb,VARCHAR(MAX),TEXT
+trex_duckdb,FLOAT,NUMERIC
+trex_duckdb,WITH @a AS @b SELECT @c INTO #@d FROM @e;,CREATE TEMP TABLE @d\nAS\nWITH @a AS @b SELECT\n@c\nFROM\n@e;\nANALYZE @d;
+trex_duckdb,WITH @a AS @b SELECT @c INTO @d FROM @e;,CREATE TABLE @d\nAS\nWITH @a AS @b SELECT\n@c\nFROM\n@e;
+trex_duckdb,SELECT @a INTO #@b FROM @c;,CREATE TEMP TABLE @b\nAS\nSELECT\n@a\nFROM\n@c;\nANALYZE @b;
+trex_duckdb,SELECT @a INTO @b FROM @c;,CREATE TABLE @b AS\nSELECT\n@a\nFROM\n@c;
+trex_duckdb,SELECT @a INTO @b;,CREATE TABLE @b AS\nSELECT\n@a;
+trex_duckdb,#,
+trex_duckdb,SELECT TOP @([0-9]+)rows @a;,SELECT @a LIMIT @rows;
+trex_duckdb,(SELECT TOP @([0-9]+)rows @a),(SELECT @a LIMIT @rows)
+trex_duckdb,SELECT DISTINCT TOP @([0-9]+)rows @a;,SELECT DISTINCT @a LIMIT @rows;
+trex_duckdb,(SELECT DISTINCT TOP @([0-9]+)rows @a),(SELECT DISTINCT @a LIMIT @rows)
+trex_duckdb,"WITH @cte AS (SELECT @s1 '@literal' @s2)","WITH @cte AS (SELECT @s1 CAST('@literal' as TEXT) @s2)"
+trex_duckdb,UPDATE STATISTICS @a;,ANALYZE @a;
+trex_duckdb,TRUNCATE TABLE @a;,DELETE FROM @a;

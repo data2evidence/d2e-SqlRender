@@ -16,3 +16,4 @@ snowflake,Snowflake
 synapse,Azure Synapse Analytics Dedicated
 iris,InterSystems IRIS
 hana,SAP HANA
+trex_duckdb,TREX DuckDB
