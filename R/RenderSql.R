@@ -70,6 +70,8 @@
 #' @import rJava
 #' @export
 render <- function(sql, warnOnMissingParameters = TRUE, ...) {
+  print("Rendering SQL code ...")
+  print(paste0("SQL: ", sql))
   errorMessages <- checkmate::makeAssertCollection()
   checkmate::assertCharacter(sql, len = 1, add = errorMessages)
   checkmate::assertLogical(warnOnMissingParameters, len = 1, add = errorMessages)
@@ -90,6 +92,8 @@ render <- function(sql, warnOnMissingParameters = TRUE, ...) {
   }
   translatedSql <- rJava::J("org.ohdsi.sql.SqlRender")$renderSql(as.character(sql), rJava::.jarray(names(parameters)), rJava::.jarray(as.character(parameters)))
   attributes(translatedSql) <- attributes(sql)
+  print("Rendered SQL code:")
+  print(paste0("SQL: ", translatedSql))
   return(translatedSql)
 }
 
@@ -157,7 +161,8 @@ translate <- function(sql,
   checkmate::assertCharacter(tempEmulationSchema, len = 1, null.ok = TRUE, add = errorMessages)
   checkmate::assertCharacter(oracleTempSchema, len = 1, null.ok = TRUE, add = errorMessages)
   checkmate::reportAssertions(collection = errorMessages)
-
+  print("Translating SQL code ...")
+  print(paste0("SQL: ", sql))
   if (!is.null(attr(sql, "sqlDialect"))) {
     warn("Input SQL has already been translated, so not translating again",
       .frequency = "regularly",
@@ -190,6 +195,8 @@ translate <- function(sql,
   translatedSql <- rJava::J("org.ohdsi.sql.SqlTranslate")$translateSqlWithPath(as.character(sql), as.character(targetDialect), rJava::.jnull(), tempEmulationSchema, as.character(pathToReplacementPatterns))
   attributes(translatedSql) <- attributes(sql)
   attr(translatedSql, "sqlDialect") <- targetDialect
+  print("Translated SQL code:")
+  print(paste0("SQL: ", translatedSql))
   return(translatedSql)
 }
 
