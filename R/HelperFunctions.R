@@ -221,7 +221,7 @@ loadRenderTranslateSql <- function(sqlFilename,
                                    oracleTempSchema = NULL,
                                    warnOnMissingParameters = TRUE) {
   
-  dbms <- trexDialect(dbms)
+  dbms = trexDialect(dbms)
   
   errorMessages <- checkmate::makeAssertCollection()
   checkmate::assertCharacter(sqlFilename, len = 1, add = errorMessages)
