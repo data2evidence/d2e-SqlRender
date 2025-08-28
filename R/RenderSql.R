@@ -150,6 +150,9 @@ translate <- function(sql,
                       targetDialect,
                       tempEmulationSchema = getOption("sqlRenderTempEmulationSchema"),
                       oracleTempSchema = NULL) {
+  
+  targetDialect = trexDialect(targetDialect)
+                        
   errorMessages <- checkmate::makeAssertCollection()
   checkmate::assertCharacter(sql, len = 1, add = errorMessages)
   checkmate::assertCharacter(targetDialect, len = 1, add = errorMessages)
