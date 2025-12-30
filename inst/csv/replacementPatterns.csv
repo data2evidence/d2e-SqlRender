@@ -1283,6 +1283,14 @@ duckdb,"WITH @cte AS (SELECT @s1 '@literal' @s2)","WITH @cte AS (SELECT @s1 CAST
 duckdb,UPDATE STATISTICS @a;,ANALYZE @a;
 duckdb,TRUNCATE TABLE @a;,DELETE FROM @a;
 duckdb,DROP INDEX @schema.@index_name;,DROP INDEX IF EXISTS @schema.@index_name;
+duckdb,"ALTER TABLE @table ALTER COLUMN @([^ ]+)a @b;","ALTER TABLE @table ALTER COLUMN @a TYPE @b;"
+duckdb,"ALTER TABLE @table ADD @a, @b;","ALTER TABLE @table <token1> @a, <token2> @b;"
+duckdb,"<token2> @b, @c;","<token2> @b, <token2> @c;"
+duckdb,"ALTER TABLE @table ADD @a;","ALTER TABLE @table <token1> @a;"
+duckdb,"<token1>",ADD COLUMN
+duckdb,"<token2>",ADD COLUMN
+duckdb,ADD COLUMN COLUMN,ADD COLUMN
+duckdb,ADD COLUMN CONSTRAINT,ADD CONSTRAINT
 snowflake,.@([0-9a-z_]+)a...@([0-9]+|y)b,x@a...@b
 snowflake,.@([0-9a-z_]+)a...@([0-9]+|y)b,x@axxx@b
 snowflake,...@([0-9]+|y)a,xxx@a
