@@ -1284,11 +1284,13 @@ duckdb,UPDATE STATISTICS @a;,ANALYZE @a;
 duckdb,TRUNCATE TABLE @a;,DELETE FROM @a;
 duckdb,DROP INDEX @schema.@index_name;,DROP INDEX IF EXISTS @schema.@index_name;
 duckdb,"ALTER TABLE @table ALTER COLUMN @([^ ]+)a @b;","ALTER TABLE @table ALTER COLUMN @a TYPE @b;"
-duckdb,"ALTER TABLE @table ADD @a, @b;","ALTER TABLE @table <token1> @a, <token2> @b;"
-duckdb,"<token2> @b, @c;","<token2> @b, <token2> @c;"
-duckdb,"ALTER TABLE @table ADD @a;","ALTER TABLE @table <token1> @a;"
+duckdb,"ALTER TABLE @table ADD @a, @b, @c, @d, @e;","<A_T> @table <token1> @a; <A_T> @table <token1> @b; <A_T> @table <token1> @c; <A_T> @table <token1> @d; <A_T> @table <token1> @e;"
+duckdb,"ALTER TABLE @table ADD @a, @b, @c, @d;","<A_T> @table <token1> @a; <A_T> @table <token1> @b; <A_T> @table <token1> @c; <A_T> @table <token1> @d;"
+duckdb,"ALTER TABLE @table ADD @a, @b, @c;","<A_T> @table <token1> @a; <A_T> @table <token1> @b; <A_T> @table <token1> @c;"
+duckdb,"ALTER TABLE @table ADD @a, @b;","<A_T> @table <token1> @a; <A_T> @table <token1> @b;"
+duckdb,"ALTER TABLE @table ADD @a;","<A_T> @table <token1> @a;"
+duckdb,<A_T>,ALTER TABLE
 duckdb,"<token1>",ADD COLUMN
-duckdb,"<token2>",ADD COLUMN
 duckdb,ADD COLUMN COLUMN,ADD COLUMN
 duckdb,ADD COLUMN CONSTRAINT,ADD CONSTRAINT
 snowflake,.@([0-9a-z_]+)a...@([0-9]+|y)b,x@a...@b
