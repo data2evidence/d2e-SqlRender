@@ -1,0 +1,22 @@
+jdk:
+  - openjdk21
+
+before_install:
+  - rm -f pom.xml
+  - echo "VERSION=$VERSION"
+
+install:
+  - |
+    VER_NUM=$(echo "$VERSION" | sed 's/^v//')
+    URL="https://github.com/data2evidence/d2e-SqlRender/releases/download/${VERSION}/SqlRender-${VER_NUM}.jar"
+    echo "Waiting for release artifact: $URL"
+    for i in $(seq 1 40); do
+      if curl -sfL -o /tmp/SqlRender.jar "$URL"; then
+        echo "Downloaded successfully"
+        break
+      fi
+      echo "Attempt $i/40 failed, waiting 30s..."
+      sleep 30
+    done
+    test -f /tmp/SqlRender.jar || exit 1
+  - mvn install:install-file -Dfile=/tmp/SqlRender.jar -DgroupId=com.github.data2evidence -DartifactId=d2e-SqlRender -Dversion=$VERSION -Dpackaging=jar
