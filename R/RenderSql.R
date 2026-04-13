@@ -68,6 +68,7 @@
 #'   b = "missingParameter"
 #' )
 #' @import rJava
+#' @import ParallelLogger
 #' @export
 render <- function(sql, warnOnMissingParameters = TRUE, ...) {
   errorMessages <- checkmate::makeAssertCollection()
@@ -91,6 +92,114 @@ render <- function(sql, warnOnMissingParameters = TRUE, ...) {
   translatedSql <- rJava::J("org.ohdsi.sql.SqlRender")$renderSql(as.character(sql), rJava::.jarray(names(parameters)), rJava::.jarray(as.character(parameters)))
   attributes(translatedSql) <- attributes(sql)
   return(translatedSql)
+}
+
+translateDuckDbDDL <- function(sql, targetDialect) {
+  # Store original SQL to detect if any translation was done
+  original_sql <- sql
+
+  # Split SQL into individual statements (by semicolon)
+  statements <- strsplit(sql, ";")[[1]]
+  processed_statements <- character()
+  translation_done <- FALSE
+
+  for (statement in statements) {
+    # Trim whitespace
+    statement <- trimws(statement)
+
+    # Skip empty statements
+    if (statement == "") {
+      next
+    }
+
+    # Remove SQL line comments (-- to end of line) to avoid interference with pattern matching
+    lines <- strsplit(statement, "\n")[[1]]
+    lines <- sub("--.*$", "", lines)
+    lines <- trimws(lines)
+    lines <- lines[lines != ""]
+    statement_no_comments <- paste(lines, collapse = "\n")
+    statement_no_comments <- trimws(statement_no_comments)
+
+    # Check if this is a CREATE TABLE statement
+    if (grepl("^CREATE\\s+TABLE", statement_no_comments, ignore.case = TRUE)) {
+      # Extract table name from the first CREATE TABLE line
+      lines_split <- strsplit(statement_no_comments, "\n")[[1]]
+      create_table_line <- ""
+
+      for (line_check in lines_split) {
+        line_check <- trimws(line_check)
+        if (line_check != "" && grepl("^CREATE\\s+TABLE", line_check, ignore.case = TRUE)) {
+          create_table_line <- line_check
+          break
+        }
+      }
+
+      # Remove CREATE TABLE [IF NOT EXISTS] keywords
+      line <- sub("^CREATE\\s+TABLE\\s+(IF\\s+NOT\\s+EXISTS\\s+)?", "", create_table_line, ignore.case = TRUE)
+      # Remove @schema. prefix if present
+      parts <- strsplit(trimws(line), "\\.")[[1]]
+      table_name <- parts[length(parts)]
+      # Remove everything from opening paren onwards
+      table_name <- sub("\\s*\\(.*", "", trimws(table_name))
+
+      # Only process if table name contains "plp" (case insensitive)
+      if (!is.na(table_name) && nchar(table_name) > 0 && grepl("plp", table_name, ignore.case = TRUE)) {
+        # Check if GENERATED ALWAYS AS IDENTITY pattern exists
+        if (grepl("GENERATED\\s+ALWAYS\\s+AS\\s+IDENTITY", statement_no_comments, ignore.case = TRUE)) {
+          seq_name <- paste0(table_name, "_seq")
+          original_statement <- statement
+          statement <- gsub(
+            "GENERATED\\s+ALWAYS\\s+AS\\s+IDENTITY\\s+NOT\\s+NULL\\s+PRIMARY\\s+KEY",
+            paste0("PRIMARY KEY DEFAULT nextval('", seq_name, "')"),
+            statement,
+            ignore.case = TRUE
+          )
+
+          if (statement != original_statement) {
+            translation_done <- TRUE
+            # Add the sequence creation as a separate statement
+            processed_statements <- c(processed_statements, paste0("CREATE SEQUENCE IF NOT EXISTS ", seq_name))
+          }
+        }
+
+        # Standard conversions
+        if (grepl("\\bint\\b", statement, ignore.case = TRUE)) {
+          translation_done <- TRUE
+          statement <- gsub("\\bint\\b", "INTEGER", statement, ignore.case = TRUE)
+        }
+
+        if (grepl("VARCHAR\\s*\\(\\s*MAX\\s*\\)", statement, ignore.case = TRUE)) {
+          translation_done <- TRUE
+          statement <- gsub("VARCHAR\\s*\\(\\s*MAX\\s*\\)", "VARCHAR", statement, ignore.case = TRUE)
+        }
+
+        if (grepl("\\btext\\b", statement, ignore.case = TRUE)) {
+          translation_done <- TRUE
+          statement <- gsub("\\btext\\b", "TEXT", statement, ignore.case = TRUE)
+        }
+
+        if (grepl("\\bfloat\\b", statement, ignore.case = TRUE)) {
+          translation_done <- TRUE
+          statement <- gsub("\\bfloat\\b", "DOUBLE", statement, ignore.case = TRUE)
+        }
+      }
+    }
+
+    # Add the processed statement to the list
+    processed_statements <- c(processed_statements, statement)
+  }
+  # Recombine statements with semicolons
+  sql <- paste(processed_statements, collapse = ";\n")
+  if (sql != "") {
+    sql <- paste0(sql, ";")
+  }
+  # Log only if translation was performed
+  # if (translation_done) {
+  #   ParallelLogger::logInfo("[DuckDB DDL Translator] Translation performed")
+  #   ParallelLogger::logInfo("[ORIGINAL SQL]:\n", original_sql)
+  #   ParallelLogger::logInfo("[TRANSLATED SQL]:\n", sql)
+  # }
+  return(sql)
 }
 
 #' @title
@@ -150,9 +259,8 @@ translate <- function(sql,
                       targetDialect,
                       tempEmulationSchema = getOption("sqlRenderTempEmulationSchema"),
                       oracleTempSchema = NULL) {
-  
-  targetDialect = trexDialect(targetDialect)
-                        
+  targetDialect <- trexDialect(targetDialect)
+
   errorMessages <- checkmate::makeAssertCollection()
   checkmate::assertCharacter(sql, len = 1, add = errorMessages)
   checkmate::assertCharacter(targetDialect, len = 1, add = errorMessages)
@@ -160,6 +268,7 @@ translate <- function(sql,
   checkmate::assertCharacter(tempEmulationSchema, len = 1, null.ok = TRUE, add = errorMessages)
   checkmate::assertCharacter(oracleTempSchema, len = 1, null.ok = TRUE, add = errorMessages)
   checkmate::reportAssertions(collection = errorMessages)
+
 
   if (!is.null(attr(sql, "sqlDialect"))) {
     warn("Input SQL has already been translated, so not translating again",
@@ -180,6 +289,12 @@ translate <- function(sql,
     )
     tempEmulationSchema <- oracleTempSchema
   }
+  # translate DDL statements using d2e specific translation patterns
+  ParallelLogger::logInfo("Target dialect: ", targetDialect)
+  if (tolower(targetDialect) == "duckdb") {
+    sql <- translateDuckDbDDL(sql, targetDialect)
+  }
+
   pathToReplacementPatterns <- system.file("csv", "replacementPatterns.csv", package = "SqlRender")
   if (is.null(tempEmulationSchema)) {
     tempEmulationSchema <- rJava::.jnull()
@@ -235,7 +350,7 @@ translateSql <- function(sql = "", targetDialect, oracleTempSchema = NULL) {
 #'
 #' @param sql                   The SQL to be translated
 #' @param targetDialect         The target dialect. Currently "oracle", "postgresql", "pdw", "impala",
-#'                              "sqlite", "sqlite extended", "netezza", "bigquery", "snowflake", "synapse", "spark", 
+#'                              "sqlite", "sqlite extended", "netezza", "bigquery", "snowflake", "synapse", "spark",
 #'                              "redshift", and "iris" are supported.
 #' @param oracleTempSchema      DEPRECATED: use \code{tempEmulationSchema} instead.
 #' @param tempEmulationSchema   Some database platforms like Oracle and Impala do not truly support
