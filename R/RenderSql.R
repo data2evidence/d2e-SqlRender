@@ -188,10 +188,13 @@ translateDuckDbDDL <- function(sql, targetDialect) {
     # Add the processed statement to the list
     processed_statements <- c(processed_statements, statement)
   }
-  # Recombine statements with semicolons
-  sql <- paste(processed_statements, collapse = ";\n")
-  if (sql != "") {
-    sql <- paste0(sql, ";")
+  # Recombine statements with semicolons. Always put the semicolon on its own
+  # line: a statement can end in a trailing "--" line comment, and appending
+  # ";" directly after it (e.g. via collapse = ";\n") would get swallowed into
+  # that comment, silently erasing the statement terminator.
+  sql <- paste(processed_statements, collapse = "\n;\n")
+  if (sql != "" && grepl(";\\s*$", trimws(original_sql))) {
+    sql <- paste0(sql, "\n;")
   }
   # Log only if translation was performed
   # if (translation_done) {
