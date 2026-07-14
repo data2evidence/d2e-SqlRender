@@ -1088,7 +1088,7 @@ spark,\"@a\",`@a`
 spark,+ '@a',|| '@a'
 spark,'@a' +,'@a' ||
 spark,CREATE INDEX @index_name ON @table (@variable);,-- spark does not support indexes
-spark,"ROUND(@a,@b)","ROUND(CAST(@a AS float),@b)"
+spark,"ROUND(@a,@b)","ROUND(CAST(@a AS DOUBLE),@b)"
 spark,"HASHBYTES('MD5',@a)","MD5(@a)"
 spark,"CONVERT(VARBINARY, CONCAT('0x', @a), 1)","CAST(CONCAT('x', @a) AS BIT(32))"
 spark,"CONVERT(DATE, @a)","TO_DATE(@a, 'yyyy-MM-dd')"
@@ -1134,7 +1134,7 @@ spark,DATETIME2,TIMESTAMP
 spark,VARCHAR(MAX),STRING
 spark,VARCHAR(@a),STRING
 spark,VARCHAR,STRING
-spark,DOUBLE PRECISION,FLOAT
+spark,DOUBLE PRECISION,DOUBLE
 spark,SELECT TOP @([0-9]+)rows @a;,SELECT @a LIMIT @rows;
 spark,(SELECT TOP @([0-9]+)rows @a),(SELECT @a LIMIT @rows)
 spark,SELECT DISTINCT TOP @([0-9]+)rows @a;,SELECT DISTINCT @a LIMIT @rows;
@@ -1146,6 +1146,7 @@ spark,"ALTER TABLE @table ADD COLUMN @([\w_-]+)column @type DEFAULT @default;","
 spark,"CAST(@a AS DATE)","IF(try_cast(@a AS DATE) IS NULL, to_date(cast(@a AS STRING), 'yyyyMMdd'), try_cast(@a AS DATE))"
 spark,"DATEADD(@part,@amount,@([0-9a-zA-Z_]+_date)date)","CAST(DATEA##(@part,@amount,@date) AS DATE)"
 spark,DATEA##,DATEADD
+spark,FLOAT,DOUBLE
 sqlite extended,"IIF(@condition, @whentrue, @whenfalse)","CASE WHEN @condition THEN @whentrue ELSE @whenfalse END"
 sqlite extended,"ROUND(@a,@b)","ROUND(CAST(@a AS REAL),@b)"
 sqlite extended,+ '@a',|| '@a'
@@ -1283,6 +1284,9 @@ duckdb,"WITH @cte AS (SELECT @s1 '@literal' @s2)","WITH @cte AS (SELECT @s1 CAST
 duckdb,UPDATE STATISTICS @a;,ANALYZE @a;
 duckdb,TRUNCATE TABLE @a;,DELETE FROM @a;
 duckdb,DROP INDEX @schema.@index_name;,DROP INDEX IF EXISTS @schema.@index_name;
+duckdb,ALTER TABLE @a DROP CONSTRAINT @b;,CREATE TABLE @a_new AS SELECT * FROM @a;DROP TABLE @a;ALTER TABLE @a_new RENAME TO @a;
+duckdb,"ALTER TABLE @table ADD @a, @b;","ALTER TABLE @table ADD @a; ALTER TABLE @table ADD @b;"
+duckdb,"ALTER TABLE @table ALTER COLUMN @([0-9a-z_]+)a @b;","ALTER TABLE @table ALTER @a TYPE @b;"
 snowflake,.@([0-9a-z_]+)a...@([0-9]+|y)b,x@a...@b
 snowflake,.@([0-9a-z_]+)a...@([0-9]+|y)b,x@axxx@b
 snowflake,...@([0-9]+|y)a,xxx@a
@@ -1405,6 +1409,9 @@ iris,SELECT @a INTO #@b FROM @c;,CREATE GLOBAL TEMPORARY TABLE #@b AS SELECT @a 
 iris,SELECT @a INTO @b FROM @c;,CREATE TABLE @b AS SELECT @a FROM @c;
 iris,SELECT @a INTO @b;,CREATE TABLE @b AS SELECT @a;
 iris,SELECT @a INTO #@b;,CREATE GLOBAL TEMPORARY TABLE #@b AS SELECT @a;
+iris,"WITH @cte CREATE TABLE #@table AS @select;","CREATE GLOBAL TEMPORARY TABLE #@table AS WITH @cte @select;"
+iris,"WITH @cte CREATE GLOBAL TEMPORARY TABLE @table AS @select;","CREATE GLOBAL TEMPORARY TABLE @table AS WITH @cte @select;"
+iris,"WITH @cte CREATE TABLE @table AS @select;","CREATE TABLE @table AS WITH @cte @select;"
 iris,#,%temp_prefix%%session_id%
 iris,UPDATE STATISTICS @a;,TUNE TABLE @a;
 iris,"--HINT BUCKET(@a, @b)", "-- haven't looked into this yet, skip it for now"
@@ -1500,3 +1507,5 @@ hana,"CHARINDEX(@a,@b)","LOCATE(@b,@a)"
 hana,"floor(@a)","CAST(<F_L_O_O_R>(@a) AS INTEGER)"
 hana,"<F_L_O_O_R>","FLOOR"
 hana,UPDATE STATISTICS #@a;,-- STATISTICS not supported on tempoary tables
+iris,CREATE TABLE @a AS (@b) ORDER BY @c;,CREATE TABLE @a AS @b ORDER BY @c;
+iris,CREATE TABLE @a AS (@b ORDER BY @c);,CREATE TABLE @a AS @b ORDER BY @c;

@@ -1,6 +1,6 @@
 # @file RenderSql
 #
-# Copyright 2025 Observational Health Data Sciences and Informatics
+# Copyright 2026 Observational Health Data Sciences and Informatics
 #
 # This file is part of SqlRender
 #
@@ -268,7 +268,6 @@ translate <- function(sql,
   checkmate::assertCharacter(tempEmulationSchema, len = 1, null.ok = TRUE, add = errorMessages)
   checkmate::assertCharacter(oracleTempSchema, len = 1, null.ok = TRUE, add = errorMessages)
   checkmate::reportAssertions(collection = errorMessages)
-
 
   if (!is.null(attr(sql, "sqlDialect"))) {
     warn("Input SQL has already been translated, so not translating again",
