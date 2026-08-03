@@ -1,4 +1,4 @@
-# Copyright 2025 Observational Health Data Sciences and Informatics
+# Copyright 2026 Observational Health Data Sciences and Informatics
 #
 # This file is part of SqlRender
 # 
@@ -43,6 +43,9 @@ write(checksum, file.path("inst", "csv", "jarChecksum.txt"))
 descriptionVersion <- stringr::str_extract(readLines("DESCRIPTION")[grepl("^Version:", readLines("DESCRIPTION"))], "(?<=Version: ).*$")
 pomVersion <- stringr::str_extract(readLines("pom.xml")[grepl("SNAPSHOT</version>", readLines("pom.xml"))], "(?<=<version>).*(?=-SNAPSHOT</version>)")
 if (descriptionVersion != pomVersion) stop("DESCRIPTION version does not match POM version")
+
+revdepcheck::revdep_reset()
+revdepcheck::revdep_check(num_workers = 4)
 
 devtools::check_win_devel()
 

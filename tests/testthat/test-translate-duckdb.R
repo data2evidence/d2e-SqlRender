@@ -247,3 +247,20 @@ test_that("translate sql server -> DuckDB CONVERT(AS DATE) with literal from CON
     "CAST(strptime(CONCAT('2000', '0101'), '%Y%m%d') AS DATE);"
   )
 })
+
+# The trailing semicolon sits on its own line because the DuckDB post-processor
+# in translate() terminates statements with "\n;" (see R/RenderSql.R).
+test_that("translate sql server -> DuckDB ALTER TABLE ADD single", {
+  sql <- translate("ALTER TABLE my_table ADD a INT;", targetDialect = "duckdb")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table  ADD a INT\n;")
+})
+
+test_that("translate sql server -> DuckDB ALTER TABLE ADD multiple", {
+  sql <- translate("ALTER TABLE my_table ADD a INT, b INT, c VARCHAR(255);", targetDialect = "duckdb")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table ADD a INT; ALTER TABLE my_table ADD b INT; ALTER TABLE my_table ADD c VARCHAR(255)\n;")
+})
+
+test_that("translate sql server -> DuckDB ALTER TABLE ALTER COLUMN", {
+  sql <- translate("ALTER TABLE my_table ALTER COLUMN a BIGINT;", targetDialect = "duckdb")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table ALTER a TYPE BIGINT\n;")
+})

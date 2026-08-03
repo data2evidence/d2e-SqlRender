@@ -1,6 +1,6 @@
 # @file RenderSql
 #
-# Copyright 2025 Observational Health Data Sciences and Informatics
+# Copyright 2026 Observational Health Data Sciences and Informatics
 #
 # This file is part of SqlRender
 #
@@ -272,7 +272,6 @@ translate <- function(sql,
   checkmate::assertCharacter(oracleTempSchema, len = 1, null.ok = TRUE, add = errorMessages)
   checkmate::reportAssertions(collection = errorMessages)
 
-
   if (!is.null(attr(sql, "sqlDialect"))) {
     warn("Input SQL has already been translated, so not translating again",
       .frequency = "regularly",
@@ -353,7 +352,7 @@ translateSql <- function(sql = "", targetDialect, oracleTempSchema = NULL) {
 #'
 #' @param sql                   The SQL to be translated
 #' @param targetDialect         The target dialect. Currently "oracle", "postgresql", "pdw", "impala",
-#'                              "sqlite", "sqlite extended", "netezza", "bigquery", "snowflake", "synapse", "spark",
+#'                              "sqlite", "sqlite extended", "netezza", "bigquery", "snowflake", "synapse", "spark", 
 #'                              "redshift", and "iris" are supported.
 #' @param oracleTempSchema      DEPRECATED: use \code{tempEmulationSchema} instead.
 #' @param tempEmulationSchema   Some database platforms like Oracle and Impala do not truly support

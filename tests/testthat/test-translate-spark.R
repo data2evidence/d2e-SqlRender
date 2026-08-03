@@ -22,7 +22,7 @@ test_that("translate sql server -> spark round", {
   )
   expect_equal_ignore_spaces(
     sql,
-    "SELECT ROUND(CAST(3.14 AS float),1)"
+    "SELECT ROUND(CAST(3.14 AS DOUBLE),1)"
   )
 })
 
@@ -307,17 +307,17 @@ test_that("translate sql server -> spark table admin", {
   sql <- translate("CREATE UNIQUE CLUSTERED INDEX index_name ON some_table (variable);",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE some_table ADD CONSTRAINT index_name UNIQUE(variable);")
 
   sql <- translate("PRIMARY KEY NONCLUSTERED",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "")
+  expect_equal_ignore_spaces(sql, "PRIMARY KEY")
 
   sql <- translate("UPDATE STATISTICS test;",
     targetDialect = "spark"
   )
-  expect_equal_ignore_spaces(sql, "")
+  expect_equal_ignore_spaces(sql, "ANALYZE TABLE test COMPUTE STATISTICS;")
 })
 
 test_that("translate sql server -> spark datetime", {
@@ -469,7 +469,7 @@ test_that("translate sql server -> spark create temp table if not exists", {
   expect_equal_ignore_spaces(sql, sprintf("CREATE TABLE IF NOT EXISTS ts.%stemp  \nUSING DELTA\n AS\nSELECT\nCAST(NULL AS int) AS x  WHERE 1 = 0;", getTempTablePrefix()))
 })
 
-rJava::J('org.ohdsi.sql.SqlTranslate')$setReplacementPatterns('inst/csv/replacementPatterns.csv')
+# rJava::J('org.ohdsi.sql.SqlTranslate')$setReplacementPatterns('inst/csv/replacementPatterns.csv')
 
 test_that("translate sql server -> spark DATEADD for DATE column", {
   # If field is a date, it should remain a date after DATEADD to be consistent with other platforms:
@@ -483,3 +483,17 @@ test_that("translate sql server -> spark DATEADD for DATE column", {
   expect_equal_ignore_spaces(sql, "SELECT DATEADD(DAY,1,start_datetime) FROM table;")
 })
 
+test_that("translate sql server -> spark create table with FLOAT", {
+  sql <- translate("CREATE TABLE a.b (x FLOAT);", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "CREATE TABLE a.b  \nUSING DELTA\n AS\nSELECT\nCAST(NULL AS DOUBLE) AS x  WHERE 1 = 0;")
+})
+
+test_that("translate sql server -> spark ALTER TABLE ADD CONSTRAINT", {
+  sql <- translate("ALTER TABLE cdm.MEASUREMENT ADD CONSTRAINT xpk_MEASUREMENT PRIMARY KEY NONCLUSTERED (measurement_id);", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE cdm.MEASUREMENT ADD CONSTRAINT xpk_MEASUREMENT PRIMARY KEY (measurement_id);")
+})
+
+test_that("translate sql server -> spark analyze table", {
+  sql <- translate("UPDATE STATISTICS results_schema.heracles_results;", targetDialect = "spark")
+  expect_equal_ignore_spaces(sql, "ANALYZE TABLE results_schema.heracles_results COMPUTE STATISTICS;")
+})
