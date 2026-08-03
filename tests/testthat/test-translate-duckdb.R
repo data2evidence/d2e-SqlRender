@@ -248,19 +248,60 @@ test_that("translate sql server -> DuckDB CONVERT(AS DATE) with literal from CON
   )
 })
 
-# The trailing semicolon sits on its own line because the DuckDB post-processor
-# in translate() terminates statements with "\n;" (see R/RenderSql.R).
 test_that("translate sql server -> DuckDB ALTER TABLE ADD single", {
   sql <- translate("ALTER TABLE my_table ADD a INT;", targetDialect = "duckdb")
-  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table  ADD a INT\n;")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table  ADD a INT;")
 })
 
 test_that("translate sql server -> DuckDB ALTER TABLE ADD multiple", {
   sql <- translate("ALTER TABLE my_table ADD a INT, b INT, c VARCHAR(255);", targetDialect = "duckdb")
-  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table ADD a INT; ALTER TABLE my_table ADD b INT; ALTER TABLE my_table ADD c VARCHAR(255)\n;")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table ADD a INT; ALTER TABLE my_table ADD b INT; ALTER TABLE my_table ADD c VARCHAR(255);")
 })
 
 test_that("translate sql server -> DuckDB ALTER TABLE ALTER COLUMN", {
   sql <- translate("ALTER TABLE my_table ALTER COLUMN a BIGINT;", targetDialect = "duckdb")
-  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table ALTER a TYPE BIGINT\n;")
+  expect_equal_ignore_spaces(sql, "ALTER TABLE my_table ALTER a TYPE BIGINT;")
+})
+
+test_that("translate sql server -> DuckDB keeps line comments on column definitions", {
+  sql <- translate(
+    "CREATE TABLE main.tp_analyses (
+  analysis_id int NOT NULL, -- Analysis identifier
+  description varchar(MAX) NOT NULL -- Analysis description
+);",
+    targetDialect = "duckdb"
+  )
+  expect_equal_ignore_spaces(
+    sql,
+    "CREATE TABLE main.tp_analyses (
+  analysis_id int NOT NULL, -- Analysis identifier
+  description TEXT NOT NULL -- Analysis description
+);"
+  )
+})
+
+test_that("translate sql server -> DuckDB puts the semicolon on its own line after a trailing comment", {
+  # A statement ending in a "--" comment would swallow a semicolon appended
+  # directly after it, leaving the next statement fused to this one.
+  sql <- translate(
+    "CREATE TABLE main.tp_analyses (
+  analysis_id int NOT NULL -- Analysis identifier
+) -- end of analyses
+;
+CREATE TABLE main.tp_arguments (
+  arguments varchar(MAX) -- Arguments as JSON
+);",
+    targetDialect = "duckdb"
+  )
+  expect_equal_ignore_spaces(
+    sql,
+    "CREATE TABLE main.tp_analyses (
+  analysis_id int NOT NULL -- Analysis identifier
+) -- end of analyses
+;
+CREATE TABLE main.tp_arguments (
+  arguments TEXT -- Arguments as JSON
+);"
+  )
+  expect_length(splitSql(sql), 2)
 })

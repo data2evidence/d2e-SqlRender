@@ -94,12 +94,40 @@ render <- function(sql, warnOnMissingParameters = TRUE, ...) {
   return(translatedSql)
 }
 
+# Does the last line of a statement end inside a "--" line comment? Quoted
+# string literals are dropped first so that a "--" inside them does not count.
+endsInLineComment <- function(statement) {
+  lines <- strsplit(statement, "\n")[[1]]
+  if (length(lines) == 0) {
+    return(FALSE)
+  }
+  grepl("--", gsub("'[^']*'", "", lines[length(lines)]))
+}
+
+# Split SQL on statement-terminating semicolons. A semicolon inside a string
+# literal, a "--" line comment or a "/* */" block comment does not terminate a
+# statement, so the pattern consumes those first and only a semicolon it did
+# not swallow counts as a boundary.
+splitOnSemicolons <- function(sql) {
+  boundaries <- gregexpr("'(?:[^']|'')*'|--[^\n]*|/\\*.*?\\*/|;", sql, perl = TRUE)[[1]]
+  if (boundaries[1] == -1) {
+    return(sql)
+  }
+  boundaries <- boundaries[substring(sql, boundaries, boundaries) == ";"]
+  if (length(boundaries) == 0) {
+    return(sql)
+  }
+  starts <- c(1, boundaries + 1)
+  ends <- c(boundaries - 1, nchar(sql))
+  substring(sql, starts, ends)
+}
+
 translateDuckDbDDL <- function(sql, targetDialect) {
   # Store original SQL to detect if any translation was done
   original_sql <- sql
 
   # Split SQL into individual statements (by semicolon)
-  statements <- strsplit(sql, ";")[[1]]
+  statements <- splitOnSemicolons(sql)
   processed_statements <- character()
   translation_done <- FALSE
 
@@ -188,14 +216,16 @@ translateDuckDbDDL <- function(sql, targetDialect) {
     # Add the processed statement to the list
     processed_statements <- c(processed_statements, statement)
   }
-  # Recombine statements with semicolons. Always put the semicolon on its own
-  # line: a statement can end in a trailing "--" line comment, and appending
-  # ";" directly after it (e.g. via collapse = ";\n") would get swallowed into
-  # that comment, silently erasing the statement terminator.
-  sql <- paste(processed_statements, collapse = "\n;\n")
-  if (sql != "" && grepl(";\\s*$", trimws(original_sql))) {
-    sql <- paste0(sql, "\n;")
+  # Recombine statements with semicolons. A statement can end in a trailing
+  # "--" line comment, and a ";" appended directly after it would be swallowed
+  # by that comment, silently erasing the statement terminator. Only those
+  # statements get their semicolon on a line of its own.
+  terminators <- ifelse(vapply(processed_statements, endsInLineComment, logical(1)), "\n;", ";")
+  statementCount <- length(processed_statements)
+  if (statementCount > 0 && !grepl(";\\s*$", trimws(original_sql))) {
+    terminators[statementCount] <- ""
   }
+  sql <- paste(paste0(processed_statements, terminators), collapse = "\n")
   # Log only if translation was performed
   # if (translation_done) {
   #   ParallelLogger::logInfo("[DuckDB DDL Translator] Translation performed")
