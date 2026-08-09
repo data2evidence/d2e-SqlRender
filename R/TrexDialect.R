@@ -1,32 +1,47 @@
 #' Switch SQL dialect for Trex connection
 #'
-#' This function conditionally switches the SQL dialect to DuckDB for
-#' when the 'trex_connection' environment variable is set to "true".
+#' This function conditionally switches the SQL dialect based on the
+#' value of the 'trex_connection' environment variable. Supported values:
+#' "trex", "trex_hana" (or unset).
+#'
+#' - If 'trex_connection' is not set, returns the original dialect.
+#' - If 'trex_connection' == "trex" and dialect != "hana", returns "duckdb".
+#' - If 'trex_connection' == "trex_hana", returns "hana".
+#' - For any other value, returns the original dialect.
 #'
 #' @param dialect A character string specifying the original SQL dialect
 #'   (e.g., "postgresql", "mysql", "sqlite", etc.)
 #'
 #' @return A character string representing the SQL dialect to use:
 #'   \itemize{
-#'     \item Returns "duckdb" if trex_connection environment variable is "true" and dialect is not "hana"
-#'     \item Returns the original dialect otherwise
+#'     \item If 'trex_connection' is not set, returns the original dialect
+#'     \item If 'trex_connection' == "trex" and dialect != "hana", returns "duckdb"
+#'     \item If 'trex_connection' == "trex_hana", returns "hana"
+#'     \item For any other value, returns the original dialect
 #'   }
 #'
 #' @details
 #' The function checks the 'trex_connection' environment variable:
 #' \itemize{
 #'   \item If the environment variable is not set (NA), returns the original dialect
-#'   \item If set to "true" and the dialect is not "hana", returns "duckdb"
+#'   \item If set to "trex" and the dialect is not "hana", returns "duckdb"
+#'   \item If set to "trex_hana", returns "hana"
 #'   \item Otherwise, returns the original dialect unchanged
 #' }
 #'
 #' @examples
 #' # Set environment variable for testing
-#' Sys.setenv(trex_connection = "true")
+#' Sys.setenv(trex_connection = "trex")
 #' trexDialect("postgresql")  # Returns "duckdb"
 #' trexDialect("hana")        # Returns "hana" (unchanged)
 #'
-#' # Unset environment variable
+#' Sys.setenv(trex_connection = "trex_hana")
+#' trexDialect("postgresql")  # Returns "hana"
+#' trexDialect("hana")        # Returns "hana"
+#'
+#' Sys.setenv(trex_connection = "other_value")
+#' trexDialect("postgresql")  # Returns "postgresql"
+#'
 #' Sys.unsetenv("trex_connection")
 #' trexDialect("postgresql")  # Returns "postgresql"
 #'
@@ -38,9 +53,11 @@ trexDialect <- function(dialect) {
   if (is.na(trex_env)) {
     return(dialect)
   }
-  if (trex_env == "true" && dialect != "hana") {
-    return("duckdb")
-  } else {
-    return(dialect)
-  }
+    if (trex_env == "trex" && dialect != "hana") {
+      return("duckdb")
+    } else if (trex_env == "trex_hana") {
+      return("hana")
+    } else {
+      return(dialect)
+    }
 }
